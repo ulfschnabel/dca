@@ -34,7 +34,11 @@ A unified CLI tool for interacting with Discord using your own account, designed
 
 ### Installation
 
-Coming soon - will be available via Homebrew.
+```bash
+brew install ulfschnabel/tap/dca
+```
+
+Or download from [releases](https://github.com/ulfschnabel/dca/releases).
 
 ### Setup
 
