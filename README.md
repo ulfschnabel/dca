@@ -22,7 +22,13 @@ A unified CLI tool for interacting with Discord using your own account, designed
 
 ## Status
 
-🚧 **Under Development** - Phase 1 implementation in progress
+✅ **Phase 2 Complete** - Feature-complete for daily Discord use
+- Activity: Recent messages across all DMs and servers
+- Servers: List, info
+- Channels: List, history
+- Messages: Send, reply, edit, delete (with approval)
+- DMs: List conversations, send, history
+- Reactions: Add, remove
 
 ## Quick Start
 
@@ -51,36 +57,43 @@ dca config init
 
 **Keep it secret!** This token gives full access to your Discord account.
 
-## Planned Commands
+## Commands
 
-### Servers
+### Activity Overview (Start Here!) 🔥
 ```bash
-dca servers list                    # List your servers
-dca servers info <server-id>        # Server details
-```
-
-### Channels
-```bash
-dca channels list <server-id>       # List channels
-dca channels history <channel-id>   # Get messages
-```
-
-### Messages
-```bash
-dca message send <channel-id> "text"           # Send message
-dca message reply <channel-id> <msg-id> "text" # Reply
-dca message edit <channel-id> <msg-id> "text"  # Edit your message
+dca activity recent --limit 15                 # See what's new everywhere
+dca activity recent --type dm                  # Only DMs
+dca activity recent --type server              # Only servers
 ```
 
 ### Direct Messages
 ```bash
-dca dm list                         # List DM channels
-dca dm send <user-id> "text"        # Send DM
+dca dm list --limit 20                         # List DM conversations (sorted by activity)
+dca dm history <username> --limit 10           # Get DM history
+dca dm send <username> "text"                  # Send DM (finds user automatically)
+```
+
+### Messages
+```bash
+dca message send <channel-id> "text" --dry-run # Preview before sending
+dca message send <channel-id> "text"           # Send message
+dca message reply <channel-id> <msg-id> "text" # Reply to message
+dca message edit <channel-id> <msg-id> "new"   # Edit your message
+dca message delete <channel-id> <msg-id>       # Delete your message
 ```
 
 ### Reactions
 ```bash
-dca reaction add <channel-id> <msg-id> :emoji: # React
+dca reaction add <channel-id> <msg-id> 👍      # Add reaction
+dca reaction remove <channel-id> <msg-id> 👍   # Remove reaction
+```
+
+### Servers & Channels
+```bash
+dca servers list                               # List your servers
+dca servers info <server-id>                   # Server details
+dca channels list <server-id>                  # List channels
+dca channels history <channel-id> --limit 10   # Get messages
 ```
 
 ## For AI Agents
@@ -97,6 +110,37 @@ All commands return JSON:
 ```
 
 Perfect for LLM parsing and automation.
+
+### Token Efficiency
+
+dca is optimized for token-efficient AI agent use:
+
+- **Small defaults**: `--limit` defaults to 10-20 (not 50-100)
+- **Sorted by recency**: Latest activity first
+- **Context included**: Server/channel names in activity feed
+- **Filtering**: `--type`, `--active-only` to reduce noise
+
+### Common Workflows
+
+**Catch up on Discord:**
+```bash
+dca activity recent --limit 20      # What's new?
+dca dm list --limit 10              # Who messaged me?
+dca dm history alice --limit 5      # Read conversation
+dca dm send alice "Got it, thanks!" # Respond
+```
+
+**Monitor specific channel:**
+```bash
+dca channels history <channel-id> --limit 5
+dca message send <channel-id> "Update: ..."
+```
+
+**Quick reactions:**
+```bash
+dca activity recent --limit 10      # See latest
+dca reaction add <ch-id> <msg-id> 👍 # React
+```
 
 ## Development
 
