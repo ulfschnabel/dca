@@ -5,7 +5,7 @@
 **Name**: dca (Discord CLI for Agents)
 **Purpose**: Text-based Discord CLI for AI agents and automation
 **Model**: Similar to slka - interact with Discord as you would normally
-**Auth**: Bot token (reliable, documented, ToS-compliant)
+**Auth**: User token (personal automation, like slka's user tokens)
 
 ## Core Principles (from slka)
 
@@ -15,6 +15,11 @@
 4. **Dry-run mode** - Test commands before execution
 5. **Single binary** - One tool, all operations
 6. **Text-only** - No voice channel support
+7. **User token auth** - Acts as you, not as a bot
+
+## Important Note
+
+⚠️ **Discord ToS Disclaimer**: Using user tokens for automation is against Discord's Terms of Service. This tool is for **personal automation only** - similar to how slka uses user tokens for Slack. Use at your own risk. Do not use for spam, abuse, or commercial purposes.
 
 ## Feature Roadmap
 
@@ -137,10 +142,22 @@ All commands follow this structure:
 
 ```json
 {
-  "bot_token": "your-bot-token-here",
+  "user_token": "your-user-token-here",
   "require_approval": true
 }
 ```
+
+### How to Get Your User Token
+
+1. Open Discord in your browser (web.discord.com)
+2. Open Developer Tools (F12)
+3. Go to Network tab
+4. Send a message or reload
+5. Look for any API request
+6. In Request Headers, find `authorization` header
+7. Copy that token (it's your user token)
+
+**Security**: Keep this token private - it gives full access to your Discord account!
 
 ## Technical Stack
 
@@ -150,18 +167,21 @@ All commands follow this structure:
 - **Output**: JSON
 - **Distribution**: Homebrew + direct download
 
-## Discord Bot Setup Guide
+## User Token vs Bot Token
 
-Users need to:
-1. Create Discord application at https://discord.com/developers/applications
-2. Create bot user
-3. Get bot token
-4. Invite bot to servers with required permissions:
-   - Read Messages/View Channels
-   - Send Messages
-   - Read Message History
-   - Add Reactions
-   - Manage Messages (for edits/deletes)
+**Why user token?**
+- Acts as YOU - no "bot" tag on messages
+- Access to your servers automatically
+- Can read DMs
+- Personal automation (like slka)
+
+**Why NOT bot token?**
+- Messages show as from a bot
+- Need to invite bot to servers
+- Can't read your DMs
+- More setup overhead
+
+This tool is designed for **personal use**, not for running public bots.
 
 ## Development Phases
 

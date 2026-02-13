@@ -41,17 +41,24 @@ func runConfigInit(cmd *cobra.Command, args []string) error {
 
 	fmt.Println("🤖 dca Configuration Setup")
 	fmt.Println()
-
-	// Get bot token
-	fmt.Print("Discord Bot Token: ")
-	botToken, err := reader.ReadString('\n')
+	fmt.Println("⚠️  This tool uses your Discord user token (personal automation)")
+	fmt.Println()
+	fmt.Println("📝 To get your Discord user token:")
+	fmt.Println("   1. Open Discord in browser (web.discord.com)")
+	fmt.Println("   2. Press F12 for Developer Tools")
+	fmt.Println("   3. Go to Network tab")
+	fmt.Println("   4. Send any message")
+	fmt.Println("   5. Find 'authorization' header in requests")
+	fmt.Println()
+	fmt.Print("Discord User Token: ")
+	userToken, err := reader.ReadString('\n')
 	if err != nil {
-		return fmt.Errorf("failed to read bot token: %w", err)
+		return fmt.Errorf("failed to read user token: %w", err)
 	}
-	botToken = strings.TrimSpace(botToken)
+	userToken = strings.TrimSpace(userToken)
 
-	if botToken == "" {
-		return fmt.Errorf("bot token is required")
+	if userToken == "" {
+		return fmt.Errorf("user token is required")
 	}
 
 	// Get approval setting
@@ -65,7 +72,7 @@ func runConfigInit(cmd *cobra.Command, args []string) error {
 
 	// Create config
 	cfg := &config.Config{
-		BotToken:        botToken,
+		UserToken:       userToken,
 		RequireApproval: requireApproval,
 	}
 
@@ -95,13 +102,13 @@ func runConfigShow(cmd *cobra.Command, args []string) error {
 	}
 
 	// Mask token
-	maskedToken := cfg.BotToken
+	maskedToken := cfg.UserToken
 	if len(maskedToken) > 8 {
 		maskedToken = maskedToken[:4] + "..." + maskedToken[len(maskedToken)-4:]
 	}
 
 	fmt.Printf("Config file: %s\n", cfgPath)
-	fmt.Printf("Bot Token: %s\n", maskedToken)
+	fmt.Printf("User Token: %s\n", maskedToken)
 	fmt.Printf("Require Approval: %v\n", cfg.RequireApproval)
 
 	return nil

@@ -8,7 +8,7 @@ import (
 )
 
 type Config struct {
-	BotToken        string `json:"bot_token"`
+	UserToken       string `json:"user_token"`
 	RequireApproval bool   `json:"require_approval"`
 }
 
