@@ -1,7 +1,10 @@
 package discord
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
@@ -737,4 +740,123 @@ func (c *Client) FindUserByUsername(username string) (*Author, error) {
 	}
 
 	return nil, fmt.Errorf("user %q not found in recent messages", username)
+}
+
+// SearchOptions configures a Discord message search query
+type SearchOptions struct {
+	Content   string
+	AuthorID  string
+	ChannelID string
+	Has       string
+	Offset    int
+	SortBy    string
+	SortOrder string
+}
+
+// SearchResult holds the parsed search response
+type SearchResult struct {
+	TotalResults int              `json:"total_results"`
+	Messages     []*SearchMessage `json:"messages"`
+}
+
+// SearchMessage represents a single search hit
+type SearchMessage struct {
+	ID        string `json:"id"`
+	ChannelID string `json:"channel_id"`
+	Author    Author `json:"author"`
+	Content   string `json:"content"`
+	Timestamp string `json:"timestamp"`
+}
+
+// SearchGuildMessages searches for messages in a guild using Discord's search API
+func (c *Client) SearchGuildMessages(guildID string, opts SearchOptions) (*SearchResult, error) {
+	params := buildSearchParams(opts)
+	baseEndpoint := fmt.Sprintf("%sguilds/%s/messages/search", discordgo.EndpointAPI, guildID)
+	fullEndpoint := baseEndpoint + "?" + params.Encode()
+
+	body, err := c.session.RequestWithBucketID("GET", fullEndpoint, nil, baseEndpoint)
+	if err != nil {
+		return nil, fmt.Errorf("failed to search guild messages: %w", err)
+	}
+
+	return parseSearchResponse(body)
+}
+
+// buildSearchParams constructs URL query parameters from SearchOptions
+func buildSearchParams(opts SearchOptions) url.Values {
+	params := url.Values{}
+	params.Set("content", opts.Content)
+	if opts.AuthorID != "" {
+		params.Set("author_id", opts.AuthorID)
+	}
+	if opts.ChannelID != "" {
+		params.Set("channel_id", opts.ChannelID)
+	}
+	if opts.Has != "" {
+		params.Set("has", opts.Has)
+	}
+	if opts.Offset > 0 {
+		params.Set("offset", strconv.Itoa(opts.Offset))
+	}
+	if opts.SortBy != "" {
+		params.Set("sort_by", opts.SortBy)
+	}
+	if opts.SortOrder != "" {
+		params.Set("sort_order", opts.SortOrder)
+	}
+	return params
+}
+
+// parseSearchResponse parses Discord's nested search response format.
+// Discord returns messages as [[msg, msg], [msg, msg]] where each inner array
+// is a group of context messages. The matched message has "hit": true.
+func parseSearchResponse(body []byte) (*SearchResult, error) {
+	var raw struct {
+		TotalResults int                 `json:"total_results"`
+		Messages     [][]json.RawMessage `json:"messages"`
+	}
+
+	if err := json.Unmarshal(body, &raw); err != nil {
+		return nil, fmt.Errorf("failed to parse search response: %w", err)
+	}
+
+	result := &SearchResult{
+		TotalResults: raw.TotalResults,
+		Messages:     make([]*SearchMessage, 0),
+	}
+
+	for _, group := range raw.Messages {
+		for _, msgRaw := range group {
+			var msg struct {
+				ID        string `json:"id"`
+				ChannelID string `json:"channel_id"`
+				Content   string `json:"content"`
+				Timestamp string `json:"timestamp"`
+				Hit       bool   `json:"hit"`
+				Author    struct {
+					ID       string `json:"id"`
+					Username string `json:"username"`
+					Bot      bool   `json:"bot"`
+				} `json:"author"`
+			}
+			if err := json.Unmarshal(msgRaw, &msg); err != nil {
+				continue
+			}
+			if msg.Hit {
+				result.Messages = append(result.Messages, &SearchMessage{
+					ID:        msg.ID,
+					ChannelID: msg.ChannelID,
+					Author: Author{
+						ID:       msg.Author.ID,
+						Username: msg.Author.Username,
+						Bot:      msg.Author.Bot,
+					},
+					Content:   msg.Content,
+					Timestamp: msg.Timestamp,
+				})
+			}
+		}
+	}
+
+	return result, nil
 }
