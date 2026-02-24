@@ -39,6 +39,7 @@ brews:
       owner: ulfschnabel
       name: homebrew-tap
       token: "{{ .Env.GITHUB_TOKEN }}"
+    directory: Formula
     homepage: https://github.com/ulfschnabel/dca
     description: "Discord CLI for Agents - Feature-complete Discord automation"
     license: MIT
